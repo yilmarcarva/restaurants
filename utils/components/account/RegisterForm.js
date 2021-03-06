@@ -2,6 +2,7 @@ import React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { Input,Button } from 'react-native-elements'
 
+
 export default function RegisterForm() {
     return (
         <View style={styles.form}>
