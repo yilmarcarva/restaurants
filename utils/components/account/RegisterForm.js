@@ -1,16 +1,59 @@
+import { size } from 'lodash'
 import React, {useState} from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { Input,Button, Icon } from 'react-native-elements'
+//Imports diferentes de los raices
+import { validateEmail } from '../../helpers'
 
 
 export default function RegisterForm() {
     const [showPassword, setshowPassword] = useState(false)
     const [showPasswordConfirm, setPasswordConfirm] = useState(false)
     const [formData, setFormData] = useState(defaultFormValues())
-
+    const [errorEmail, setErrorEmail] = useState("")
+    const [errorPassword, setErrorPassword] = useState("")
+    const [errorConfirm, setErrorConfirm] = useState("")
 
     const onChange =(e, type) =>{
         setFormData({...formData, [type]: e.nativeEvent.text})
+       
+    }
+
+    const registerUser = () =>{
+        if(!validateData()){
+            return;
+        }
+        
+        console.log("vamos bien malparido")
+    }
+
+    const validateData = () =>{
+        setErrorConfirm("")
+        setErrorEmail("")
+        setErrorPassword("")
+        let isValid = true
+        
+        if(!validateEmail(formData.email)){
+            setErrorEmail("Debes de ingresar un E-mail válido.")
+            isValid=false
+        }
+
+        if(size(formData.password)<6){
+            setErrorPassword("Debes ingresar una contraseña de al menos 6 caracteres.")
+            isValid=false
+        }
+
+        if(size(formData.confirm)<6){
+            setErrorConfirm("Debes ingresar una contraseña de al menos 6 caracteres.")
+            isValid=false
+        }
+        if(formData.confirm!==formData.password){
+            setErrorConfirm("Las contraseñas deben ser iguales")
+            setErrorPassword("Las contraseñas deben ser iguales")
+            isValid=false 
+            
+        }
+        return isValid
     }
 
     return (
@@ -25,6 +68,8 @@ export default function RegisterForm() {
                 iconStyle={styles.icon}
                 />}
             keyboardType="email-address"
+            errorMessage={errorEmail}
+            defaultValue={formData.email}
         />
         <Input
             containerStyle={styles.input}
@@ -32,6 +77,8 @@ export default function RegisterForm() {
             password={true}
             secureTextEntry={!showPassword}
             onChange={(e) => onChange(e,"password")}
+            errorMessage={errorPassword}
+            defaultValue={formData.password}
             rightIcon={<Icon
                 type="material-community"
                 name={showPassword ? "eye-off-outline" :"eye-outline"}
@@ -46,6 +93,8 @@ export default function RegisterForm() {
             password={true}
             secureTextEntry={!showPasswordConfirm}
             onChange={(e) => onChange(e,"confirm")}
+            errorMessage={errorConfirm}
+            defaultValue={formData.confirm}
             rightIcon={<Icon
                 type="material-community"
                 name={showPasswordConfirm ? "eye-off-outline" :"eye-outline"}
@@ -58,7 +107,7 @@ export default function RegisterForm() {
             title="Registrar Usuario"
             buttonStyle={styles.button}
             containerStyle={styles.btnContainer}
-            onPress={()=> console.log(formData)}
+            onPress={()=> registerUser()}
         />
         </View>
     )
