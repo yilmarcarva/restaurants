@@ -1,14 +1,34 @@
-import React from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import React, {useState} from 'react'
+import { StyleSheet, Text, View, Alert } from 'react-native'
 import { Avatar } from 'react-native-elements'
 //IMPORTS FUERA DE LOS DE RAIZ
+import { updateProfile, uploadImage } from '../../actions'
 import { loadImageFromGallery } from '../../helpers'
 
-export default function InfoUser({ user}) {
+export default function InfoUser({ user, setLoading, setLoadingText}) {
+    const [photoUrl, setphotoUrl] = useState(user.photoURL)
 
-    const changePhoto = async () =>{
-        const result = await loadImageFromGallery([1,1])
+    const changePhoto = async() =>{
+        const result = await loadImageFromGallery([1, 1])
         console.log(result)
+        if(!result.status){
+            return
+        }
+        setLoadingText("Actualizando imagen.")
+        setLoading(true)
+        const resultUploadImage = await uploadImage(result.image,"avatars",user.uid)
+        if(!resultUploadImage.statusResponse){
+            setLoading(false)
+            Alert.alert("Ocurrió un problema almacenando la imagen de perfil.")
+            return
+        }
+        const resultUpdateProfile = await updateProfile({photoURL: resultUploadImage.url})
+        setLoading(false)
+        if(resultUpdateProfile.statusResponse){
+            setphotoUrl(resultUploadImage.url)
+        }else{
+            Alert.alert("Ocurrió un problema al actualizar la foto de perfil, sos pendejo")
+        }
     }
 
 
@@ -18,10 +38,10 @@ export default function InfoUser({ user}) {
                 rounded
                 size="large"
                 onPress={changePhoto}
-                containerStyle={styles.avatar}
+                // containerStyle={styles.avatar}
                 source={
-                    user.photoURL 
-                    ? {url: photoURL} 
+                    photoUrl
+                    ? {uri: photoUrl} 
                     : require("../../../assets/avatar-default.jpg")
                 }
             />
